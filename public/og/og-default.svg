@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" font-family="Inter, 'Segoe UI', Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a201c"/>
+      <stop offset="1" stop-color="#06120f"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.5">
+      <stop offset="0" stop-color="#14b8a6" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#14b8a6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="8" fill="#0d9488"/>
+  <rect x="0" y="262" width="1200" height="420" fill="url(#glow)"/>
+
+  <!-- brand -->
+  <text x="600" y="92" text-anchor="middle" font-size="40" font-weight="700" fill="#ffffff">
+    IsItSahih
+  </text>
+
+  <!-- neutral verify badge: magnifying glass -->
+  <circle cx="600" cy="262" r="112" fill="#0d9488"/>
+  <circle cx="600" cy="262" r="112" fill="none" stroke="#2dd4bf" stroke-opacity="0.5" stroke-width="10"/>
+  <circle cx="582" cy="244" r="50" fill="none" stroke="#ffffff" stroke-width="16"/>
+  <line x1="620" y1="282" x2="658" y2="320" stroke="#ffffff" stroke-width="20" stroke-linecap="round"/>
+
+  <!-- hook line -->
+  <text x="600" y="452" text-anchor="middle" font-size="64" font-weight="800" fill="#ffffff" letter-spacing="1">
+    Is it authentic?
+  </text>
+
+  <!-- tagline -->
+  <text x="600" y="512" text-anchor="middle" font-size="30" fill="#9fb4ac">
+    Check any claim against the Quran &amp; authentic Hadith
+  </text>
+
+  <!-- domain -->
+  <text x="600" y="586" text-anchor="middle" font-size="28" font-weight="600" fill="#2dd4bf" letter-spacing="2">
+    isitsahih.app
+  </text>
+</svg>

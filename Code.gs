@@ -23,8 +23,9 @@
 const TAB_HEADERS = {
   requests: [
     'timestamp', 'session_id', 'language', 'app_version',
-    'claim_length', 'claim_preview', 'latency_ms',
-    'verdict', 'reference_count', 'verdict_overridden', 'no_sources_found',
+    'claim', 'claim_length', 'claim_preview', 'latency_ms',
+    'verdict', 'explanation', 'references',
+    'reference_count', 'verdict_overridden', 'no_sources_found',
     'injection_suspicious', 'gemini_key_index', 'rejection_reason',
   ],
   shares: [
@@ -51,18 +52,42 @@ const TAB_HEADERS = {
   ],
 };
 
-function getOrCreateSheet(ss, name, headers) {
+function styleHeader(sheet, numCols) {
+  const headerRange = sheet.getRange(1, 1, 1, numCols);
+  headerRange.setFontWeight('bold');
+  headerRange.setBackground('#1a6b3c');
+  headerRange.setFontColor('#ffffff');
+  sheet.setFrozenRows(1);
+}
+
+// Returns { sheet, headers } where headers is the sheet's ACTUAL header row.
+// Creates the sheet if missing, and appends any newly-expected columns to an
+// existing sheet so the schema can evolve without misaligning old rows.
+function getSheetAndHeaders(ss, name, expected) {
   let sheet = ss.getSheetByName(name);
   if (!sheet) {
     sheet = ss.insertSheet(name);
-    sheet.appendRow(headers);
-    const headerRange = sheet.getRange(1, 1, 1, headers.length);
-    headerRange.setFontWeight('bold');
-    headerRange.setBackground('#1a6b3c');
-    headerRange.setFontColor('#ffffff');
-    sheet.setFrozenRows(1);
+    sheet.appendRow(expected);
+    styleHeader(sheet, expected.length);
+    return { sheet: sheet, headers: expected.slice() };
   }
-  return sheet;
+
+  const lastCol = sheet.getLastColumn();
+  let headers = lastCol > 0 ? sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(String) : [];
+
+  if (headers.length === 0) {
+    sheet.getRange(1, 1, 1, expected.length).setValues([expected]);
+    styleHeader(sheet, expected.length);
+    return { sheet: sheet, headers: expected.slice() };
+  }
+
+  const missing = expected.filter(function (h) { return headers.indexOf(h) === -1; });
+  if (missing.length) {
+    sheet.getRange(1, headers.length + 1, 1, missing.length).setValues([missing]);
+    headers = headers.concat(missing);
+    styleHeader(sheet, headers.length);
+  }
+  return { sheet: sheet, headers: headers };
 }
 
 // Pull a field whether it arrived as form param or JSON, tolerating camel/snake.
@@ -90,11 +115,12 @@ function doPost(e) {
     }
 
     var tab = String(data.tab || 'requests');
-    var headers = TAB_HEADERS[tab] || TAB_HEADERS.requests;
+    var expected = TAB_HEADERS[tab] || TAB_HEADERS.requests;
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = getOrCreateSheet(ss, tab, headers);
-    sheet.appendRow(headers.map(function (h) {
+    var info = getSheetAndHeaders(ss, tab, expected);
+    // Map values to the sheet's ACTUAL header order so columns never misalign.
+    info.sheet.appendRow(info.headers.map(function (h) {
       if (h === 'timestamp') return toCell(data.timestamp || new Date().toISOString());
       return toCell(readField(data, h));
     }));
@@ -122,7 +148,7 @@ function writeDailySummary() {
   var requests = ss.getSheetByName('requests');
   if (!requests) return;
 
-  var summary = getOrCreateSheet(ss, 'daily_summary', TAB_HEADERS.daily_summary);
+  var summary = getSheetAndHeaders(ss, 'daily_summary', TAB_HEADERS.daily_summary).sheet;
 
   var yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);

@@ -199,7 +199,10 @@ async function logSuccess(
 ) {
   await logEvent("requests", {
     ...baseRow(claim, language, sessionId, started),
+    claim, // full claim text
     verdict: result.verdictCanonical,
+    explanation: result.explanation, // full generated explanation
+    references: result.references, // full generated references (JSON)
     reference_count: result.references.length,
     verdict_overridden: result.verdictOverridden,
     no_sources_found: result.noSourcesFound,
