@@ -36,17 +36,15 @@ export default async (request, context) => {
   if (!share) return response;
 
   const lang = share.language === "Bangla" ? "Bangla" : "English";
-  const claim = truncate(String(share.claim || ""), 100);
+  // Strip surrounding quotes/whitespace so titles never start with stray quotes.
+  const rawClaim = String(share.claim || "").trim().replace(/^["'“”‘’]+|["'“”‘’]+$/g, "").trim();
 
   // Title: keep a question as-is; turn a statement into a curiosity hook.
-  let title;
-  if (isQuestion(share.claim || "")) {
-    title = claim;
-  } else if (lang === "Bangla") {
-    title = `"${claim}" — এটি কি সহিহ? 🤔`;
-  } else {
-    title = `"${claim}" — is it authentic? 🤔`;
-  }
+  // Capped to ~60 chars (the OG sweet spot; X/LinkedIn truncate beyond that).
+  const hook = lang === "Bangla" ? " — এটি কি সহিহ? 🤔" : " — is it authentic? 🤔";
+  const title = isQuestion(rawClaim)
+    ? truncate(rawClaim, 62)
+    : truncate(rawClaim, 40) + hook;
 
   // Description: deliberately withholds the verdict to drive the click.
   const description =
