@@ -1,0 +1,5 @@
+{
+  "name": "hadith checker",
+  "description": "A simple hadith refereance checking app by AI.",
+  "requestFramePermissions": []
+}

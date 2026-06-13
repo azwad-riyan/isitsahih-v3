@@ -1,0 +1,38 @@
+# Netlify configuration for IsItSahih v4
+# Build is a Vite SPA; verification + sharing run as server-side functions.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+  # Bundle the Blobs SDK with the functions
+  external_node_modules = []
+
+# SPA + share routes -> serve the built index.html, the app reads the path itself
+[[redirects]]
+  from = "/share/*"
+  to = "/index.html"
+  status = 200
+
+# Immutable cache for fetched share blobs
+[[headers]]
+  for = "/.netlify/functions/get-result"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Inject per-share Open Graph tags for social previews (WhatsApp / Telegram / X)
+[[edge_functions]]
+  path = "/share/*"
+  function = "og-inject"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
