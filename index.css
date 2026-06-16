@@ -15,6 +15,8 @@
   /* Prioritize Bengali font to prevent inconsistent rendering */
   --font-family: "Noto Sans Bengali", "Inter", sans-serif;
   --font-family-arabic: "Noto Naskh Arabic", serif;
+  /* The app ships a single light theme; opt out of OS dark-mode auto-inversion. */
+  color-scheme: light;
 }
 
 body {
@@ -327,8 +329,8 @@ body {
   color: inherit;
   white-space: pre-wrap;
   /* Preserve line breaks in text */
-  text-align: justify;
-  /* Justify text left and right */
+  text-align: start;
+  /* Start-aligned for readability (justify causes uneven "rivers" of whitespace) */
 }
 
 .verdict-true {
@@ -502,6 +504,100 @@ body {
 
 .verified-source-tag:hover {
   color: var(--primary-color);
+}
+
+/* Clickable brand (logo + title) — resets the default link styling */
+.brand-link {
+  display: contents;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Minimum-length hint shown under the input before it's submittable */
+.input-hint {
+  text-align: start;
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: -0.25rem 0 0.75rem;
+}
+
+/* Educational disclaimer shown under every verdict */
+.result-disclaimer {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background-color: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #92400e;
+}
+
+/* Secondary action button (e.g. "Check another claim") */
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0.65rem 1.4rem;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-color);
+  font-family: var(--font-family);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.secondary-button:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+/* Floating "Install app" affordance, shown only when the browser offers install */
+.install-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 0 1.5rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--true-bg);
+  border: 1px solid #a7f3d0;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: var(--true-fg);
+}
+
+.install-banner button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.5rem 1.1rem;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--primary-color);
+  color: #fff;
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.install-banner button:hover {
+  background-color: var(--primary-hover-color);
+}
+
+.install-banner .install-dismiss {
+  background: transparent;
+  color: var(--true-fg);
+  font-weight: 600;
+  padding: 0.5rem 0.6rem;
 }
 
 /* --- FOOTER STYLES --- */
@@ -737,152 +833,5 @@ body {
   .explanation-toggle {
     width: 100%;
     justify-content: center;
-  }
-}
-
-/* Dark Mode Styles */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --primary-color: #2dd4bf;
-    --primary-hover-color: #5eead4;
-    --background-color: #030712;
-    --text-color: #e5e7eb;
-    --card-background: #111827;
-    --border-color: #374151;
-    --true-bg: #064e3b;
-    --true-fg: #6ee7b7;
-    --false-bg: #7f1d1d;
-    --false-fg: #fca5a5;
-    --neutral-bg: #1f2937;
-    --neutral-fg: #9ca3af;
-  }
-
-  body {
-    background-image: none;
-  }
-
-  .title {
-    color: #f9fafb;
-  }
-
-  .description {
-    color: #9ca3af;
-  }
-
-  .claim-input {
-    background-color: #1f2937;
-    color: #f9fafb;
-    border-color: #4b5563;
-  }
-
-  .claim-input::placeholder {
-    color: #6b7280;
-  }
-
-  .claim-input:focus {
-    background-color: #111827;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.25);
-  }
-
-  .submit-button:disabled {
-    background-color: #374151;
-    color: #9ca3af;
-  }
-
-  .menu-button:hover {
-    background-color: #374151;
-    color: var(--primary-color);
-  }
-
-  .menu-button svg {
-    fill: currentColor;
-  }
-
-  .menu-item:hover {
-    background-color: #374151;
-  }
-
-  .error-message {
-    background-color: #5c2c2c;
-    color: #fca5a5;
-    border-color: #7f1d1d;
-  }
-
-  .verdict-true {
-    border-color: #059669;
-  }
-
-  .verdict-false {
-    border-color: #ef4444;
-  }
-
-  .verdict-neutral {
-    border-color: #4b5563;
-  }
-
-  .references-title {
-    color: #f9fafb;
-  }
-
-  .reference-item {
-    background-color: #1f2937;
-  }
-
-  .reference-header {
-    background-color: #111827;
-  }
-
-  .reference-source {
-    color: var(--primary-color);
-  }
-
-  .reference-arabic {
-    color: #f9fafb;
-  }
-
-  .reference-translation {
-    color: #9ca3af;
-  }
-
-  .explanation-toggle {
-    color: #9ca3af;
-    border-color: #4b5563;
-  }
-
-  .explanation-toggle:hover {
-    background-color: #374151;
-    color: var(--primary-color);
-  }
-
-  .reference-explanation {
-    background-color: #1f2937;
-    color: #d1d5db;
-  }
-
-  .verified-source-tag {
-    background: #374151;
-    color: #9ca3af;
-  }
-
-  .donate-button-footer {
-    background-color: #831843;
-    color: #fbcfe8;
-  }
-
-  .donate-button-footer:hover {
-    background-color: #9d174d;
-  }
-
-  .modal-body {
-    color: #d1d5db;
-  }
-
-  .contact-highlight {
-    color: #e5e7eb;
-  }
-
-  .contact-section {
-    color: #9ca3af;
   }
 }

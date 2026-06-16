@@ -51,6 +51,11 @@ const TAB_HEADERS = {
   key_health: [
     'timestamp', 'session_id', 'api_key_index', 'failure_type', 'claim_preview',
   ],
+  client_events: [
+    'timestamp', 'session_id', 'event', 'display_mode',
+    'country', 'country_code', 'city', 'region', 'timezone',
+    'device_type', 'os', 'browser', 'accept_language', 'user_agent',
+  ],
   daily_summary: [
     'date', 'total_requests', 'rejections', 'true_count', 'false_count',
     'uncertain_count', 'error_count', 'no_sources_found_count',

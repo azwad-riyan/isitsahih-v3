@@ -13,8 +13,11 @@
   gtag('config', 'G-R2JBRJSZH5');
 </script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
+    <!-- Allow pinch-zoom for accessibility (dense Arabic + translations). -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <!-- The app ships a single (light) theme; tell the browser not to auto-darken controls. -->
+    <meta name="color-scheme" content="light">
+
     <!-- SEO Meta Tags -->
     <title>Verify Islamic Claims with Quran & Sahih Hadith | IsItSahih</title>
     <meta name="description" content="Verify Islamic statements against authentic Quran verses and Sahih Hadith. Get instant references with explanations from trusted Islamic sources only.">
@@ -43,6 +46,14 @@
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
     <meta name="author" content="IsItSahih">
     <meta name="theme-color" content="#0d9488">
+
+    <!-- PWA / installable app -->
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="IsItSahih">
+    <link rel="apple-touch-icon" href="/logo.svg">
     
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">

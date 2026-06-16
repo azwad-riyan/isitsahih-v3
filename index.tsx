@@ -74,17 +74,74 @@ const getSessionId = (): string => {
   }
 };
 
+// --- ANALYTICS (PWA install + launch) ---
+// Fire-and-forget client event → /track → Google Sheets `client_events` tab.
+// This is how install/usage is measured: see `app_installed` (the install moment)
+// and `launch_standalone` (sessions opened from the installed icon) in that sheet.
+const track = (event: string, extra: Record<string, string> = {}) => {
+  try {
+    fetch("/.netlify/functions/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ event, sessionId: getSessionId(), ...extra }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch {
+    /* analytics must never break the app */
+  }
+};
+
+// True when the app is running as an installed PWA (Android/desktop standalone
+// or iOS "Add to Home Screen").
+const isStandalone = (): boolean => {
+  try {
+    return (
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as any).standalone === true
+    );
+  } catch {
+    return false;
+  }
+};
+
 // --- COMPONENTS ---
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, language }) => {
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  // Escape closes the modal; move focus to the close button on open so keyboard
+  // and screen-reader users land inside the dialog.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    closeRef.current?.focus();
+    return () => document.removeEventListener("keydown", onKey);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
+      <div
+        className="modal-content"
+        onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+      >
         <div className="modal-header">
           <h2 className="modal-title">{title}</h2>
-          <button className="modal-close" onClick={onClose}>&times;</button>
+          <button
+            ref={closeRef}
+            className="modal-close"
+            onClick={onClose}
+            aria-label={language === "Bangla" ? "বন্ধ করুন" : "Close"}
+          >
+            &times;
+          </button>
         </div>
         <div className="modal-body">
           {children}
@@ -201,11 +258,21 @@ const ResultView: React.FC<{ result: any; language: string }> = ({ result, langu
         <div className="verdict-content">
           <div className="verdict-header-row" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <h2 className="verdict-main-text">{result.verdict}</h2>
-            {result.cached && <span style={{ fontSize: '0.6rem', background: 'rgba(0,0,0,0.1)', padding: '2px 6px', borderRadius: '4px', opacity: 0.7 }}>(Cached)</span>}
+            {result.cached && (
+              <span style={{ fontSize: '0.6rem', background: 'rgba(0,0,0,0.1)', padding: '2px 6px', borderRadius: '4px', opacity: 0.7 }}>
+                {language === "Bangla" ? "পূর্বে যাচাইকৃত" : "Previously checked"}
+              </span>
+            )}
           </div>
           <p className="verdict-explanation">{result.explanation}</p>
         </div>
       </div>
+
+      <p className="result-disclaimer">
+        {language === "Bangla"
+          ? "এটি একটি শিক্ষামূলক টুল, কোনো ফতোয়া নয়। আমরা নিচের প্রকৃত উৎসগুলো তুলে ধরি যাতে আপনি নিজে পড়ে বুঝতে পারেন। নিশ্চিত সিদ্ধান্তের জন্য একজন যোগ্য আলেমের পরামর্শ নিন।"
+          : "This is an educational tool, not a fatwa. We surface the actual sources below so you can read and judge for yourself. For a definitive ruling, please consult a qualified scholar."}
+      </p>
 
       {result.references && result.references.length > 0 && (
         <>
@@ -252,8 +319,10 @@ const SharePage: React.FC<{ id: string }> = ({ id }) => {
   return (
     <div className="container">
       <header className="header">
-        <div className="header-logo-container"><SahihLogo /></div>
-        <div className="header-title-container"><h1 className="title">Is It Sahih</h1></div>
+        <a href="/" className="brand-link" aria-label={language === "Bangla" ? "হোম পেজে যান" : "Go to home page"}>
+          <div className="header-logo-container"><SahihLogo /></div>
+          <div className="header-title-container"><h1 className="title">Is It Sahih</h1></div>
+        </a>
         <div className="header-actions" />
       </header>
       <main role="main">
@@ -277,7 +346,7 @@ const SharePage: React.FC<{ id: string }> = ({ id }) => {
               className="share-banner"
               style={{ background: "rgba(13,148,136,0.08)", border: "1px solid rgba(13,148,136,0.25)", borderRadius: 10, padding: "0.75rem 1rem", fontSize: "0.85rem", margin: "0.5rem 0 1rem" }}
             >
-              📎 {language === "Bangla" ? "শেয়ারকৃত ফলাফল" : "Shared result"}
+              {language === "Bangla" ? "শেয়ারকৃত ফলাফল" : "Shared result"}
               {share.createdAt ? ` — ${new Date(share.createdAt).toLocaleDateString()}` : ""}.{" "}
               <span style={{ opacity: 0.8 }}>
                 {language === "Bangla"
@@ -318,32 +387,21 @@ const App = () => {
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [language, setLanguage] = useState("English");
+  // Remember the user's language choice across visits.
+  const [language, setLanguage] = useState<string>(() => {
+    try {
+      return localStorage.getItem("iss_language") === "Bangla" ? "Bangla" : "English";
+    } catch {
+      return "English";
+    }
+  });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("");
   const [shareState, setShareState] = useState("idle"); // idle|saving|copied|error
   const [shareUrl, setShareUrl] = useState("");
   const [shareOpen, setShareOpen] = useState(false);
 
-  // Loading Messages Configuration
-  const loadingMessages = {
-    English: [
-      "Analyzing your question...",
-      "Searching authentic Hadith collections...",
-      "Cross-referencing with Quranic verses...",
-      "Checking authentic sources...",
-      "Consulting Islamic databases...",
-      "Generating final verdict..."
-    ],
-    Bangla: [
-      "আপনার প্রশ্নটি বিশ্লেষণ করা হচ্ছে...",
-      "সহীহ হাদিস গ্রন্থগুলো অনুসন্ধান করা হচ্ছে...",
-      "কুরআনের সাথে তুলনা করা হচ্ছে...",
-      "নির্ভরযোগ্য উৎস যাচাই করা হচ্ছে...",
-      "ইসলামিক ডেটাবেস চেক করা হচ্ছে...",
-      "ফলাফল প্রস্তুত করা হচ্ছে..."
-    ]
-  };
+  // PWA install prompt (Chrome/Edge/Android). null until the browser offers it.
+  const [installEvent, setInstallEvent] = useState<any>(null);
 
   // Modal States
   const [showAbout, setShowAbout] = useState(false);
@@ -353,8 +411,19 @@ const App = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const shareRef = useRef<HTMLDivElement>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const languages = ["English", "Bangla"];
+
+  // Persist language whenever it changes.
+  useEffect(() => {
+    try {
+      localStorage.setItem("iss_language", language);
+    } catch {
+      /* ignore */
+    }
+  }, [language]);
 
   const genericError =
     language === "Bangla"
@@ -376,22 +445,63 @@ const App = () => {
     };
   }, []);
 
-  // Message Rotation Effect
+  // --- PWA install + launch analytics ---
+  // Log how the app was opened (installed icon vs browser), and wire up the
+  // install prompt so we can offer a button and record the outcome.
   useEffect(() => {
-    let interval: any;
-    if (loading) {
-      const messages = language === "Bangla" ? loadingMessages.Bangla : loadingMessages.English;
-      let i = 0;
-      setLoadingMessage(messages[0]);
-      interval = setInterval(() => {
-        i = (i + 1) % messages.length;
-        setLoadingMessage(messages[i]);
-      }, 3000); // Change message every 3 seconds
-    } else {
-      setLoadingMessage("");
+    track(isStandalone() ? "launch_standalone" : "launch_browser", {
+      displayMode: isStandalone() ? "standalone" : "browser",
+    });
+
+    const onBeforeInstall = (e: Event) => {
+      e.preventDefault(); // stash it so we can trigger the prompt from our own button
+      setInstallEvent(e);
+      track("install_prompt_available");
+    };
+    const onInstalled = () => {
+      setInstallEvent(null);
+      track("app_installed");
+    };
+    window.addEventListener("beforeinstallprompt", onBeforeInstall);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBeforeInstall);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
+  }, []);
+
+  // Bring the result into view (and focus it) once it arrives, so users on
+  // mobile don't miss the answer that renders below the fold.
+  useEffect(() => {
+    if (result && resultRef.current) {
+      resultRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      resultRef.current.focus();
     }
-    return () => clearInterval(interval);
-  }, [loading, language]);
+  }, [result]);
+
+  const handleInstallClick = async () => {
+    if (!installEvent) return;
+    track("install_prompt_shown");
+    installEvent.prompt();
+    try {
+      const choice = await installEvent.userChoice;
+      track(choice?.outcome === "accepted" ? "install_accepted" : "install_dismissed");
+    } catch {
+      /* ignore */
+    }
+    setInstallEvent(null);
+  };
+
+  const handleCheckAnother = () => {
+    setClaim("");
+    setResult(null);
+    setError("");
+    setShareUrl("");
+    setShareState("idle");
+    setShareOpen(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    textareaRef.current?.focus();
+  };
 
   // --- CLIENT CACHE (saves repeat function calls / quota) ---
   const getCacheKey = (text: string, lang: string) =>
@@ -477,16 +587,16 @@ const App = () => {
 
   const Header = () => (
     <header className="header">
-      {/* Grid Item 1: Logo on the far left */}
-      <div className="header-logo-container">
-        {/* Use SVG component instead of img tag to ensure display even without file */}
-        <SahihLogo />
-      </div>
-
-      {/* Grid Item 2: Title in the exact center */}
-      <div className="header-title-container">
-        <h1 className="title">Is It Sahih</h1>
-      </div>
+      {/* Grid Items 1 & 2: Logo + title — clickable, returns to a fresh home view */}
+      <a href="/" className="brand-link" aria-label={language === "Bangla" ? "হোম পেজে যান" : "Go to home page"}>
+        <div className="header-logo-container">
+          {/* Use SVG component instead of img tag to ensure display even without file */}
+          <SahihLogo />
+        </div>
+        <div className="header-title-container">
+          <h1 className="title">Is It Sahih</h1>
+        </div>
+      </a>
 
       {/* Grid Item 3: Menu on the far right */}
       <div className="header-actions">
@@ -672,13 +782,36 @@ const App = () => {
     <div className="container">
       <Header />
       <main role="main" aria-label="Islamic Verification Tool">
-        {/* SEO Content - Screen Reader Only */}
-        <h1 className="sr-only">Verify Islamic Claims with Quran and Sahih Hadith</h1>
+        {/* The visible brand title in the header is the page's single <h1>.
+            This keyword-rich line is kept for SEO/screen-reader context only. */}
+        <p className="sr-only">Verify Islamic Claims with Quran and Sahih Hadith</p>
         <div className="sr-only" role="contentinfo">
           IsItSahih verifies Islamic statements strictly against the Quran and authentic Sahih Hadith collections.
           This educational tool provides references from trusted Islamic sources.
           Not intended as religious legal advice or fatwa. Consult qualified Islamic scholars for personal rulings.
         </div>
+
+        {/* Install affordance — only when the browser offers it and we're not already installed */}
+        {installEvent && !isStandalone() && (
+          <div className="install-banner">
+            <span>
+              {language === "Bangla"
+                ? "অ্যাপটি ইনস্টল করে যেকোনো সময় ব্যবহার করুন।"
+                : "Install the app for quick access anytime."}
+            </span>
+            <button type="button" onClick={handleInstallClick}>
+              {language === "Bangla" ? "ইনস্টল করুন" : "Install app"}
+            </button>
+            <button
+              type="button"
+              className="install-dismiss"
+              onClick={() => setInstallEvent(null)}
+              aria-label={language === "Bangla" ? "বন্ধ করুন" : "Dismiss"}
+            >
+              {language === "Bangla" ? "পরে" : "Not now"}
+            </button>
+          </div>
+        )}
 
         <section aria-labelledby="verification-section">
           <h2 id="verification-section" className="sr-only">Claim Verification Section</h2>
@@ -693,6 +826,7 @@ const App = () => {
             </p>
 
             <textarea
+              ref={textareaRef}
               name="claim"
               value={claim}
               onChange={(e) => setClaim(e.target.value)}
@@ -709,6 +843,13 @@ const App = () => {
             >
               {claim.length}/{MAX_LEN}
             </div>
+            {trimmedLen > 0 && trimmedLen < MIN_LEN && (
+              <p className="input-hint">
+                {language === "Bangla"
+                  ? `সম্পূর্ণ প্রশ্ন লিখুন (কমপক্ষে ${MIN_LEN}টি অক্ষর)।`
+                  : `Please write a full question (at least ${MIN_LEN} characters).`}
+              </p>
+            )}
             <button
               type="submit"
               className="submit-button"
@@ -717,13 +858,19 @@ const App = () => {
               {loading ? (
                 <div className="loading-container">
                   <div className="spinner"></div>
-                  <span className="loading-text">{loadingMessage}</span>
+                  <span className="loading-text">
+                    {language === "Bangla" ? "যাচাই করা হচ্ছে..." : "Checking…"}
+                  </span>
                 </div>
               ) : (language === "Bangla" ? "সত্যতা যাচাই করুন" : "Check Authenticity")}
             </button>
           </form>
           {error && <div className="error-message">{error}</div>}
-          {result && <ResultView result={result} language={language} />}
+          {result && (
+            <div ref={resultRef} tabIndex={-1} style={{ outline: "none" }}>
+              <ResultView result={result} language={language} />
+            </div>
+          )}
           {result && (
             <div style={{ display: "flex", justifyContent: "center", marginTop: "1.25rem" }}>
               <div ref={shareRef} style={{ position: "relative" }}>
@@ -830,6 +977,13 @@ const App = () => {
               </div>
             </div>
           )}
+          {result && (
+            <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
+              <button type="button" className="secondary-button" onClick={handleCheckAnother}>
+                {language === "Bangla" ? "আরেকটি দাবি যাচাই করুন" : "Check another claim"}
+              </button>
+            </div>
+          )}
         </section>
       </main>
 
@@ -891,7 +1045,7 @@ const App = () => {
           <div className="example-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="example-bad" style={{ padding: '0.75rem', background: '#fef2f2', borderRadius: '8px', border: '1px solid #fecaca' }}>
               <strong style={{ color: '#ef4444', display: 'block', marginBottom: '0.5rem' }}>
-                ❌ {language === "Bangla" ? "ভুল পদ্ধতি (অস্পষ্ট)" : "Bad (Too Vague)"}
+                ✕ {language === "Bangla" ? "ভুল পদ্ধতি (অস্পষ্ট)" : "Bad (Too Vague)"}
               </strong>
               <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.9rem', color: '#7f1d1d' }}>
                 <li>{language === "Bangla" ? "নামাজ" : "Salah"}</li>
@@ -902,7 +1056,7 @@ const App = () => {
 
             <div className="example-good" style={{ padding: '0.75rem', background: '#ecfdf5', borderRadius: '8px', border: '1px solid #a7f3d0' }}>
               <strong style={{ color: '#059669', display: 'block', marginBottom: '0.5rem' }}>
-                ✅ {language === "Bangla" ? "সঠিক পদ্ধতি (পূর্ণাঙ্গ)" : "Good (Verifiable)"}
+                ✓ {language === "Bangla" ? "সঠিক পদ্ধতি (পূর্ণাঙ্গ)" : "Good (Verifiable)"}
               </strong>
               <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.9rem', color: '#064e3b' }}>
                 <li>{language === "Bangla" ? "নামাজে সূরা ফাতিহা পড়া কি বাধ্যতামূলক?" : "Is reciting Surah Fatiha mandatory in Salah?"}</li>
@@ -927,3 +1081,11 @@ const App = () => {
 const root = createRoot(document.getElementById("root")!);
 const shareMatch = window.location.pathname.match(/^\/share\/([^/?#]+)/);
 root.render(shareMatch ? <SharePage id={decodeURIComponent(shareMatch[1])} /> : <App />);
+
+// Register the service worker so the app is installable and works offline.
+// Best-effort: a failure here never affects the running app.
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
+}

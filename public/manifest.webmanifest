@@ -1,0 +1,21 @@
+{
+  "name": "IsItSahih — Verify Islamic Claims",
+  "short_name": "IsItSahih",
+  "description": "Verify Islamic claims against the Quran and authentic Sahih Hadith. See the actual sources and decide for yourself.",
+  "lang": "en",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f9fafb",
+  "theme_color": "#0d9488",
+  "categories": ["education", "books", "reference"],
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
