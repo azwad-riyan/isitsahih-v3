@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+.netlify/
+
+# Lockfile intentionally not committed: a Windows-generated lockfile makes
+# Netlify's npm ci skip the Linux-native rollup/esbuild binaries (npm
+# optional-deps bug), breaking `vite build`. A fresh npm install fixes it.
+package-lock.json
+
+# Secrets — NEVER commit these (covers .env, .env.local, .env-2, etc.)
+.env*
+!.env.example
+
+# Local planning / historical docs (contain live keys + webhook URLs, large binaries)
+docs-old/
+docs/
+
+# Logs & temp
+*.log
+npm-debug.log*
+tmp_*.mjs
+
+# Editor / OS / tooling
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.claude/
+*.local

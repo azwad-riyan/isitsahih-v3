@@ -28,6 +28,8 @@ export interface VerificationResult {
   verdictOverridden: boolean;      // integrity guard fired
   noSourcesFound: boolean;         // search returned nothing
   attributions: string[];          // provider attribution keys present, e.g. ["kalimat"]
+  shareId?: string;                // every result is persisted to Blobs; this is its id
+  shareUrl?: string;               // permanent shareable URL for this result
 }
 
 // Why a request was rejected/failed (logged, never shown verbatim to the user).

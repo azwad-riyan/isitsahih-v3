@@ -7,11 +7,14 @@
 //             { ok: false }                               on ANY failure/rejection
 // The frontend shows a single generic error whenever ok is false. The real
 // cause is only ever written to the logs.
+import { getStore } from "@netlify/blobs";
 import { sanitiseClaim } from "./lib/sanitise";
 import { checkInjection } from "./lib/injection";
 import { searchKalimat } from "./lib/kalimat";
 import { getVerdict } from "./lib/gemini";
 import { logEvent, preview } from "./lib/log";
+import { extractClientMeta } from "./lib/clientmeta";
+import type { ClientMeta, NetlifyContextLike } from "./lib/clientmeta";
 import type {
   Language,
   Reference,
@@ -49,7 +52,64 @@ function fail(): Response {
   return jsonResponse({ ok: false }, 200);
 }
 
-export default async function handler(req: Request): Promise<Response> {
+function siteUrl(req: Request): string {
+  const fromEnv = process.env.URL || process.env.DEPLOY_PRIME_URL;
+  if (fromEnv) return fromEnv.replace(/\/$/, "");
+  try {
+    return new URL(req.url).origin;
+  } catch {
+    return "https://isitsahih.app";
+  }
+}
+
+interface ShareBlob {
+  id: string;
+  createdAt: string;
+  claim: string;
+  result: VerificationResult;
+  language: Language;
+  appVersion: string;
+  sessionId: string;
+}
+
+/**
+ * Persist EVERY result to Netlify Blobs so a shareable, tamper-proof link always
+ * exists — whether or not the user later chooses to share. On success the result
+ * is mutated in place with shareId/shareUrl. Failure is swallowed: a missing
+ * share link must never break verification (the frontend falls back to
+ * save-result on demand).
+ */
+async function persistShare(
+  result: VerificationResult,
+  claim: string,
+  language: Language,
+  sessionId: string,
+  req: Request,
+): Promise<void> {
+  try {
+    const id = crypto.randomUUID();
+    const blob: ShareBlob = {
+      id,
+      createdAt: new Date().toISOString(),
+      claim,
+      result,
+      language,
+      appVersion: APP_VERSION,
+      sessionId,
+    };
+    const store = getStore("shares");
+    await store.setJSON(id, blob);
+    result.shareId = id;
+    result.shareUrl = `${siteUrl(req)}/share/${id}`;
+  } catch {
+    /* link is best-effort; verification still succeeds without it */
+  }
+}
+
+export default async function handler(
+  req: Request,
+  context?: NetlifyContextLike,
+): Promise<Response> {
   if (req.method === "OPTIONS") return new Response(null, { status: 204 });
   if (req.method !== "POST") return fail();
 
@@ -57,6 +117,9 @@ export default async function handler(req: Request): Promise<Response> {
   let language: Language = "English";
   let sessionId = "";
   let claimForLog = "";
+  // Geo (country/city/timezone) + device/OS/browser + language preference.
+  // Best-effort; empty under `netlify dev` where edge geo isn't populated.
+  const meta = extractClientMeta(req, context);
 
   try {
     const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
@@ -67,14 +130,14 @@ export default async function handler(req: Request): Promise<Response> {
     const { clean, lengthError } = sanitiseClaim(body.claim);
     claimForLog = clean;
     if (lengthError) {
-      await logReject(lengthError, clean, language, sessionId, started);
+      await logReject(lengthError, clean, language, sessionId, started, meta);
       return fail();
     }
 
     // --- Gate 2: prompt-injection defence ----------------------------------
     const injection = checkInjection(clean);
     if (injection.blocked) {
-      await logReject("injection_attempt", clean, language, sessionId, started);
+      await logReject("injection_attempt", clean, language, sessionId, started, meta);
       return fail();
     }
 
@@ -85,7 +148,8 @@ export default async function handler(req: Request): Promise<Response> {
     // --- No authentic source found -----------------------------------------
     if (topRefs.length === 0) {
       const result = buildNoSourceResult(language);
-      await logSuccess(result, clean, language, sessionId, started, {
+      await persistShare(result, clean, language, sessionId, req);
+      await logSuccess(result, clean, language, sessionId, started, meta, {
         kalimat: search.diagnostics,
         gemini: null,
         injectionSuspicious: injection.suspicious,
@@ -96,7 +160,7 @@ export default async function handler(req: Request): Promise<Response> {
     // --- Verdict (AI, constrained) -----------------------------------------
     const gemini = await getVerdict(clean, topRefs, language);
     if (!gemini.result) {
-      await logError("upstream_error", clean, language, sessionId, started, {
+      await logError("upstream_error", clean, language, sessionId, started, meta, {
         stage: "gemini",
         exhaustedAll: gemini.exhaustedAll,
         attempts: gemini.attempts,
@@ -106,14 +170,15 @@ export default async function handler(req: Request): Promise<Response> {
     }
 
     const result = assembleResult(language, topRefs, gemini.result);
-    await logSuccess(result, clean, language, sessionId, started, {
+    await persistShare(result, clean, language, sessionId, req);
+    await logSuccess(result, clean, language, sessionId, started, meta, {
       kalimat: search.diagnostics,
       gemini: { keyIndexUsed: gemini.keyIndexUsed, attempts: gemini.attempts },
       injectionSuspicious: injection.suspicious,
     });
     return jsonResponse({ ok: true, result });
   } catch (err: any) {
-    await logError("unknown", claimForLog, language, sessionId, started, {
+    await logError("unknown", claimForLog, language, sessionId, started, meta, {
       message: err?.message || String(err),
     });
     return fail();
@@ -140,19 +205,23 @@ function assembleResult(
   refs: Reference[],
   ai: { verdict: Verdict; explanation: string; relevant: Array<{ index: number; connection: string }> },
 ): VerificationResult {
-  // Attach AI connection notes to references by index. The AI never removes a
-  // reference and never edits its Arabic/translation — it only annotates.
+  // Attach AI connection notes to references by index. The AI never edits a
+  // reference's Arabic/translation — it only annotates which ones are relevant.
   const connectionByIndex = new Map<number, string>();
   for (const r of ai.relevant) {
     if (r.index >= 0 && r.index < refs.length && r.connection.trim()) {
       connectionByIndex.set(r.index, r.connection.trim());
     }
   }
-  const references = refs.map((r, i) => ({
-    ...r,
-    connection_explanation: connectionByIndex.get(i),
-  }));
-  const usedReferenceIndices = [...connectionByIndex.keys()].sort((a, b) => a - b);
+
+  // Drop references the AI did NOT flag as relevant. Kalimat's semantic search is
+  // broad and returns loosely-related hits; the AI only writes a connection note
+  // for references that genuinely bear on the claim. A reference with no
+  // connection note is noise, so we never show it.
+  const references = refs
+    .map((r, i) => ({ ...r, connection_explanation: connectionByIndex.get(i) }))
+    .filter((r) => !!r.connection_explanation);
+  const usedReferenceIndices = references.map((_, i) => i);
 
   // Integrity guard: a True/False verdict must rest on at least one reference.
   let verdictCanonical = ai.verdict;
@@ -178,7 +247,13 @@ function assembleResult(
 
 // --- logging wrappers -------------------------------------------------------
 
-function baseRow(claim: string, language: Language, sessionId: string, started: number) {
+function baseRow(
+  claim: string,
+  language: Language,
+  sessionId: string,
+  started: number,
+  meta: ClientMeta,
+) {
   return {
     session_id: sessionId,
     language,
@@ -186,6 +261,17 @@ function baseRow(claim: string, language: Language, sessionId: string, started: 
     claim_preview: preview(claim),
     latency_ms: Date.now() - started,
     app_version: APP_VERSION,
+    // client context (geo + device + language preference)
+    country: meta.country,
+    country_code: meta.country_code,
+    city: meta.city,
+    region: meta.region,
+    timezone: meta.timezone,
+    device_type: meta.device_type,
+    os: meta.os,
+    browser: meta.browser,
+    accept_language: meta.accept_language,
+    user_agent: meta.user_agent,
   };
 }
 
@@ -195,10 +281,11 @@ async function logSuccess(
   language: Language,
   sessionId: string,
   started: number,
+  meta: ClientMeta,
   extra: { kalimat: any; gemini: any; injectionSuspicious: boolean },
 ) {
   await logEvent("requests", {
-    ...baseRow(claim, language, sessionId, started),
+    ...baseRow(claim, language, sessionId, started, meta),
     claim, // full claim text
     verdict: result.verdictCanonical,
     explanation: result.explanation, // full generated explanation
@@ -208,6 +295,8 @@ async function logSuccess(
     no_sources_found: result.noSourcesFound,
     injection_suspicious: extra.injectionSuspicious,
     gemini_key_index: extra.gemini?.keyIndexUsed ?? "",
+    share_id: result.shareId ?? "",
+    share_url: result.shareUrl ?? "",
   });
   await logApiUsage(sessionId, extra.kalimat, extra.gemini?.attempts ?? []);
 }
@@ -218,9 +307,10 @@ async function logReject(
   language: Language,
   sessionId: string,
   started: number,
+  meta: ClientMeta,
 ) {
   await logEvent("requests", {
-    ...baseRow(claim, language, sessionId, started),
+    ...baseRow(claim, language, sessionId, started, meta),
     verdict: "REJECTED",
     rejection_reason: reason,
   });
@@ -232,10 +322,11 @@ async function logError(
   language: Language,
   sessionId: string,
   started: number,
+  meta: ClientMeta,
   detail: Record<string, unknown>,
 ) {
   await logEvent("errors", {
-    ...baseRow(claim, language, sessionId, started),
+    ...baseRow(claim, language, sessionId, started, meta),
     rejection_reason: reason,
     ...detail,
   });

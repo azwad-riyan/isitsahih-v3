@@ -37,11 +37,22 @@ export function getGeminiKeys(): string[] {
 }
 
 function systemInstruction(language: Language): string {
-  const out = language === "Bangla" ? "Bangla (use Bangla numerals)" : "English";
+  const isBangla = language === "Bangla";
+  const out = isBangla ? "Bangla (বাংলা, use Bangla numerals)" : "English";
+  const langRule = isBangla
+    ? `OUTPUT LANGUAGE (MANDATORY): Write BOTH the "explanation" and EVERY "connection"
+strictly in Bangla (বাংলা). This is required even though the CLAIM and the
+REFERENCES may be in English or Arabic. Do NOT write the explanation or
+connections in English. Use natural, fluent Bangla and Bangla numerals. Only the
+Arabic text of references is left untouched — never translate or alter it.`
+    : `OUTPUT LANGUAGE (MANDATORY): Write the "explanation" and every "connection" in English.`;
+
   return `You are "Sahih", an automated authenticity checker for Islamic claims.
 
 You are given a user CLAIM and a numbered list of REFERENCES. The references were
 retrieved from authentic sources (the Quran and the six authentic hadith books).
+
+${langRule}
 
 ABSOLUTE RULES:
 - Judge the CLAIM using ONLY the REFERENCES provided. Never use outside knowledge.
@@ -57,14 +68,17 @@ VERDICT:
                  to Islam something the authentic sources do not support).
 - "Uncertain" => the references are not sufficient to decide.
 
-Write the explanation and each connection note in ${out}. Do NOT put citation
-numbers like [1] in the explanation.
+RELEVANCE FILTERING (IMPORTANT): The references come from a broad semantic search,
+so some may NOT actually relate to the claim. List a reference in "relevant" ONLY
+if it genuinely bears on the claim, with a real "connection" note explaining how.
+Do NOT include references that are off-topic or only loosely related — those will
+be discarded. Do NOT put citation numbers like [1] in the explanation.
 
 Respond with ONLY this JSON (no markdown, no extra text):
 {
   "verdict": "True" | "False" | "Uncertain",
-  "explanation": "concise ${out} summary of why",
-  "relevant": [ { "index": <number from the list>, "connection": "why this reference relates to the claim, in ${out}" } ]
+  "explanation": "concise summary of why, written in ${out}",
+  "relevant": [ { "index": <number from the list>, "connection": "why this reference relates to the claim, written in ${out}" } ]
 }
 Include in "relevant" only the references you actually relied on.`;
 }

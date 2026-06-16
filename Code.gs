@@ -27,6 +27,10 @@ const TAB_HEADERS = {
     'verdict', 'explanation', 'references',
     'reference_count', 'verdict_overridden', 'no_sources_found',
     'injection_suspicious', 'gemini_key_index', 'rejection_reason',
+    'share_id', 'share_url',
+    // client context (geo + device + language preference)
+    'country', 'country_code', 'city', 'region', 'timezone',
+    'device_type', 'os', 'browser', 'accept_language', 'user_agent',
   ],
   shares: [
     'timestamp', 'share_id', 'share_url', 'session_id', 'verdict',
@@ -37,6 +41,8 @@ const TAB_HEADERS = {
     'timestamp', 'session_id', 'language', 'app_version',
     'claim_length', 'claim_preview', 'latency_ms',
     'rejection_reason', 'stage', 'message', 'exhaustedAll', 'attempts', 'status',
+    'country', 'country_code', 'city', 'region', 'timezone',
+    'device_type', 'os', 'browser', 'accept_language', 'user_agent',
   ],
   api_usage: [
     'timestamp', 'session_id', 'upstream', 'detail', 'key_index',
