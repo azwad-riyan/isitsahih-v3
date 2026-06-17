@@ -750,6 +750,24 @@ const App = () => {
       const text = shareMessage();
       const eu = encodeURIComponent(url);
       const et = encodeURIComponent(text);
+
+      // Extract share UUID from the URL (last segment after /share/)
+      const shareId = url.split("/share/")[1] ?? "";
+
+      // Log which platform was used → Google Sheets `share_actions` tab
+      track("share_action", { platform: target, shareId });
+
+      // Fire GA4 built-in `share` event — visible in Events explorer under method=platform
+      try {
+        if (typeof window !== "undefined" && (window as any).gtag) {
+          (window as any).gtag("event", "share", {
+            method: target,
+            content_type: "verification_result",
+            item_id: shareId,
+          });
+        }
+      } catch { /* analytics must never break the app */ }
+
       if (target === "copy") {
         await navigator.clipboard.writeText(url);
         setShareState("copied");

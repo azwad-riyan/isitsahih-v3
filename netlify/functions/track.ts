@@ -22,6 +22,11 @@ const ALLOWED_EVENTS = new Set([
   "app_installed",            // appinstalled event — the definitive "installed" signal
   "launch_standalone",        // app opened from the installed icon (standalone display)
   "launch_browser",           // app opened in a normal browser tab
+  "share_action",             // user clicked a platform share button (carries platform + shareId)
+]);
+
+const SHARE_PLATFORMS = new Set([
+  "whatsapp", "facebook", "telegram", "x", "copy", "native",
 ]);
 
 function json(obj: unknown, status = 200): Response {
@@ -46,6 +51,31 @@ export default async function handler(
     const sessionId = typeof body.sessionId === "string" ? body.sessionId.slice(0, 80) : "";
     const displayMode = typeof body.displayMode === "string" ? body.displayMode.slice(0, 30) : "";
     const meta = extractClientMeta(req, context);
+
+    if (event === "share_action") {
+      // Platform-specific share click: log to share_actions tab with geo/device context.
+      const platform = typeof body.platform === "string" && SHARE_PLATFORMS.has(body.platform)
+        ? body.platform
+        : "unknown";
+      const shareId = typeof body.shareId === "string" ? body.shareId.slice(0, 80) : "";
+
+      await logEvent("share_actions", {
+        session_id: sessionId,
+        platform,
+        share_id: shareId,
+        country: meta.country,
+        country_code: meta.country_code,
+        city: meta.city,
+        region: meta.region,
+        timezone: meta.timezone,
+        device_type: meta.device_type,
+        os: meta.os,
+        browser: meta.browser,
+        accept_language: meta.accept_language,
+        user_agent: meta.user_agent,
+      });
+      return json({ ok: true });
+    }
 
     await logEvent("client_events", {
       event,

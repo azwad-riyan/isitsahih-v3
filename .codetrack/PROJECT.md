@@ -28,7 +28,7 @@ _Last updated: 2026-06-17_
 ## Active Features
 - [x] pwa → features/pwa.md
 - [ ] verification-core → features/verification-core.md
-- [ ] sharing → features/sharing.md
+- [x] sharing → features/sharing.md
 
 ## Critical Notes
 - API keys live ONLY in Netlify env vars, never in client bundle

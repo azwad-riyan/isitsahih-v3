@@ -36,6 +36,19 @@ const TAB_HEADERS = {
     'timestamp', 'share_id', 'share_url', 'session_id', 'verdict',
     'claim_length', 'claim_preview', 'language', 'reference_count',
     'app_version', 'verdict_overridden',
+    'platform',         // which button the user clicked (whatsapp/facebook/telegram/x/copy/native)
+  ],
+  // One row per platform-share click (fired by shareTo() in the client).
+  share_actions: [
+    'timestamp', 'session_id', 'platform', 'share_id',
+    'country', 'country_code', 'city', 'region', 'timezone',
+    'device_type', 'os', 'browser', 'accept_language', 'user_agent',
+  ],
+  // One row per GET to /get-result (i.e. someone opened a shared link).
+  share_views: [
+    'timestamp', 'share_id', 'referrer',
+    'country', 'country_code', 'city', 'region', 'timezone',
+    'device_type', 'os', 'browser', 'accept_language', 'user_agent',
   ],
   errors: [
     'timestamp', 'session_id', 'language', 'app_version',
@@ -60,6 +73,7 @@ const TAB_HEADERS = {
     'date', 'total_requests', 'rejections', 'true_count', 'false_count',
     'uncertain_count', 'error_count', 'no_sources_found_count',
     'verdict_overrides', 'avg_latency_ms', 'unique_sessions', 'shares_created',
+    'share_views_count',  // how many times shared links were opened that day
   ],
 };
 
@@ -205,11 +219,22 @@ function writeDailySummary() {
     }).length;
   }
 
+  var shareViewsSheet = ss.getSheetByName('share_views');
+  var shareViewsCount = 0;
+  if (shareViewsSheet) {
+    var svAll = shareViewsSheet.getDataRange().getValues();
+    var svHeaders = svAll[0];
+    var svTsIdx = svHeaders.indexOf('timestamp');
+    shareViewsCount = svAll.slice(1).filter(function (r) {
+      return String(r[svTsIdx] || '').slice(0, 10) === dateStr;
+    }).length;
+  }
+
   summary.appendRow([
     dateStr, dayRows.length, rejections, trueCount, falseCount, uncertainCount,
     errorCount, noSources, overrides,
     latencyN > 0 ? Math.round(totalLatency / latencyN) : 0,
-    Object.keys(sessions).length, sharesCreated,
+    Object.keys(sessions).length, sharesCreated, shareViewsCount,
   ]);
 }
 
