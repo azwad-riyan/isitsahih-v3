@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About IsItSahih — Methodology & Sources</title>
+  <meta name="description" content="Learn how IsItSahih verifies Islamic claims using semantic search across the Quran and six authentic Hadith collections, constrained AI analysis, and a transparent uncertainty default.">
+  <link rel="canonical" href="https://isitsahih.app/about.html">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Inter", sans-serif; background: #f9fafb; color: #1f2937; line-height: 1.6; }
+    a { color: #0d9488; }
+    .wrap { max-width: 680px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2.5rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb; }
+    header a { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: inherit; }
+    header svg { width: 32px; height: 32px; color: #0d9488; }
+    header .brand { font-size: 1.2rem; font-weight: 700; color: #0d9488; }
+    h1 { font-size: 1.75rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem; }
+    .subtitle { color: #6b7280; margin-bottom: 2rem; }
+    h2 { font-size: 1.1rem; font-weight: 600; color: #111827; margin: 2rem 0 0.75rem; }
+    p { margin-bottom: 0.9rem; color: #374151; }
+    ul { margin: 0.5rem 0 0.9rem 1.4rem; }
+    ul li { margin-bottom: 0.4rem; color: #374151; }
+    .card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.25rem 1.5rem; margin: 1.5rem 0; }
+    .step { display: flex; gap: 1rem; margin-bottom: 1rem; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: #0d9488; color: white; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .badge { display: inline-block; background: rgba(13,148,136,0.1); color: #0d9488; border-radius: 6px; padding: 2px 10px; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.5rem; }
+    footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb; font-size: 0.85rem; color: #9ca3af; text-align: center; }
+    footer a { color: #0d9488; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a href="/">
+        <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+          <path d="M384 96v320H152c-29.35 0-48.47 17.51-54.33 41.05C94.48 448.2 92.27 439.1 92.27 439.1c-2.3-9.5-12-15.1-21.5-12.8s-15.1 12-12.8 21.5l14 58c1.6 6.7 7.7 11.3 14.5 11.3h337.5c8.8 0 16-7.2 16-16V96c0-8.8-7.2-16-16-16h-40zM152 48h240c26.5 0 48 21.5 48 48v352h-24V96h-16v304h-16V96h-16v304h-16V96h-16v304h-16V96h-16v304h-16V96h-16v304h-16V96h-16v304h-16V96h-24v316.5c-7.3-1.6-14.8-2.5-22.5-2.5-35.3 0-64 28.7-64 64 0 3.8.3 7.6.9 11.3-1.3-.2-2.7-.3-4-.3-26.5 0-48-21.5-48-48V96c0-26.5 21.5-48 48-48z"/>
+        </svg>
+        <span class="brand">Is It Sahih</span>
+      </a>
+    </header>
+
+    <h1>About IsItSahih</h1>
+    <p class="subtitle">An educational Islamic claims verification tool. Not a fatwa service.</p>
+
+    <h2>What We Do</h2>
+    <p>
+      IsItSahih helps you verify whether an Islamic claim, statement, or practice is supported by
+      the Quran or authentic Hadith. You enter a claim — for example, "Is it permissible to pray
+      with shoes on?" — and the tool searches primary Islamic sources and returns a verdict
+      (True, False, or Uncertain) with the actual Arabic text and English translation of each
+      supporting reference.
+    </p>
+    <p>
+      Every result is stored permanently at a unique URL (<code>/share/{id}</code>), so you can
+      share exact verified findings without re-running the check.
+    </p>
+
+    <h2>Our Methodology</h2>
+    <div class="card">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <strong>Semantic Search</strong><br>
+          Your claim is sent to Kalimat.dev, a semantic vector search engine trained on Islamic
+          scripture. It searches both the Quran and six Hadith collections
+          (Sahih al-Bukhari, Sahih Muslim, Sunan Abu Dawood, Sunan an-Nasa'i, Sunan at-Tirmidhi,
+          Sunan Ibn Majah) and retrieves the most semantically relevant passages. Only Hadith
+          graded <em>Sahih</em> (authentic) or <em>Hasan</em> (good) are included — weak or
+          fabricated narrations are excluded by default.
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <strong>AI Verdict — Constrained to Retrieved Sources Only</strong><br>
+          The retrieved passages are passed to Gemini AI with a strict prompt: the AI may only
+          render a verdict based on what the search returned. It cannot invent citations, paraphrase
+          scripture, or draw on general training knowledge about Islam. If the retrieved sources
+          do not clearly support a True or False verdict, the system defaults to <em>Uncertain</em>.
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <strong>Integrity Guard</strong><br>
+          A final check removes any reference that the AI did not explicitly mark as relevant.
+          If a True or False verdict is returned with zero supporting references after this
+          filtering step, it is automatically downgraded to <em>Uncertain</em>. This prevents
+          confident-sounding verdicts without evidential basis.
+        </div>
+      </div>
+    </div>
+
+    <h2>Sources</h2>
+    <ul>
+      <li>The Holy Quran</li>
+      <li>Sahih al-Bukhari (compiled by Imam Muhammad al-Bukhari, d. 870 CE)</li>
+      <li>Sahih Muslim (compiled by Imam Muslim ibn al-Hajjaj, d. 875 CE)</li>
+      <li>Sunan Abu Dawood (compiled by Imam Abu Dawood al-Sijistani, d. 889 CE)</li>
+      <li>Sunan an-Nasa'i (compiled by Imam Ahmad an-Nasa'i, d. 915 CE)</li>
+      <li>Sunan at-Tirmidhi (compiled by Imam Muhammad at-Tirmidhi, d. 892 CE)</li>
+      <li>Sunan Ibn Majah (compiled by Imam Ibn Majah, d. 887 CE)</li>
+    </ul>
+    <p>
+      These six collections, collectively known as the <em>Kutub al-Sittah</em>, are the most
+      widely accepted Hadith compilations in Sunni Islam and form the scholarly standard for
+      Hadith authentication.
+    </p>
+
+    <h2>Important Limitations</h2>
+    <div class="card">
+      <p>
+        <span class="badge">Not a Fatwa</span><br>
+        IsItSahih is an educational reference tool. Verdicts are based on AI analysis of
+        retrieved primary sources. They do not constitute religious legal rulings (fatwas) and
+        may not reflect the consensus of Islamic scholars or the positions of particular schools
+        of jurisprudence (madhabs).
+      </p>
+      <p>
+        For personal religious decisions, please consult a qualified Islamic scholar.
+      </p>
+      <p>
+        Results reflect what is found in the above collections and may differ from rulings
+        based on weak Hadith, regional scholarly tradition, or later jurisprudential consensus.
+      </p>
+    </div>
+
+    <h2>Languages</h2>
+    <p>
+      IsItSahih supports verification in English and Bangla (Bengali). Arabic text is always
+      displayed verbatim — we do not translate or paraphrase scripture.
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+      Questions or feedback: <a href="mailto:isitsahih@gmail.com">isitsahih@gmail.com</a>
+    </p>
+
+    <footer>
+      <p>
+        <a href="/">IsItSahih</a> &nbsp;·&nbsp;
+        <a href="/privacy.html">Privacy Policy</a> &nbsp;·&nbsp;
+        © 2026 Is It Sahih. All rights reserved.
+      </p>
+      <p style="margin-top:0.5rem">Powered by <a href="https://kalimat.dev" rel="noopener">Kalimat.dev</a></p>
+    </footer>
+  </div>
+</body>
+</html>

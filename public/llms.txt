@@ -1,0 +1,49 @@
+# IsItSahih
+
+> IsItSahih is a free Islamic claims verification tool. Users submit Islamic
+> statements or questions; the tool searches the Quran and authentic Sahih Hadith
+> via semantic vector search, then AI renders a verdict (True / False / Uncertain)
+> based solely on the retrieved references — never inventing citations.
+
+## What this site does
+
+IsItSahih answers questions of the form "Is [Islamic claim] authentic?" by
+searching the Quran and six authentic hadith collections (Sahih al-Bukhari,
+Sahih Muslim, Sunan Abu Dawood, Sunan an-Nasa'i, Sunan at-Tirmidhi, Sunan Ibn
+Majah) via Kalimat semantic search, then using Gemini AI to render a verdict
+of True, False, or Uncertain based solely on the retrieved references.
+
+## Citable content
+
+Each share page at https://isitsahih.app/share/{uuid} is a permanent, immutable
+Q&A record containing:
+- The original claim or question
+- A verdict (True / False / Uncertain) with an explanation paragraph
+- Verbatim Arabic text and English translations of supporting Quran verses or Hadith
+- Source citation: book name, hadith grade (sahih / hasan)
+
+## Languages
+
+English and Bangla (Bengali). Arabic text is displayed verbatim for all sources.
+
+## Limitations
+
+IsItSahih is an educational reference tool — not a fatwa platform. Verdicts are
+based on AI analysis of retrieved primary sources and may not reflect scholarly
+consensus. Users are directed to consult qualified Islamic scholars for personal
+religious rulings.
+
+## Sources
+
+- The Holy Quran
+- Sahih al-Bukhari, Sahih Muslim, Sunan Abu Dawood, Sunan an-Nasa'i,
+  Sunan at-Tirmidhi, Sunan Ibn Majah
+- Powered by Kalimat.dev semantic search API
+
+## Contact
+
+isitsahih@gmail.com
+
+## Sitemap
+
+https://isitsahih.app/sitemap.xml

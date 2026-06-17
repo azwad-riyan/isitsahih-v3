@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — IsItSahih</title>
+  <meta name="description" content="IsItSahih privacy policy. Learn what data is collected when you verify Islamic claims, how it is used, and your rights.">
+  <link rel="canonical" href="https://isitsahih.app/privacy.html">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Inter", sans-serif; background: #f9fafb; color: #1f2937; line-height: 1.6; }
+    a { color: #0d9488; }
+    .wrap { max-width: 680px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2.5rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb; }
+    header a { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: inherit; }
+    header svg { width: 32px; height: 32px; color: #0d9488; }
+    header .brand { font-size: 1.2rem; font-weight: 700; color: #0d9488; }
+    h1 { font-size: 1.75rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem; }
+    .subtitle { color: #6b7280; margin-bottom: 2rem; font-size: 0.9rem; }
+    h2 { font-size: 1.05rem; font-weight: 600; color: #111827; margin: 2rem 0 0.6rem; }
+    p { margin-bottom: 0.9rem; color: #374151; }
+    ul { margin: 0.5rem 0 0.9rem 1.4rem; }
+    ul li { margin-bottom: 0.4rem; color: #374151; }
+    footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb; font-size: 0.85rem; color: #9ca3af; text-align: center; }
+    footer a { color: #0d9488; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a href="/">
+        <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+          <path d="M384 96v320H152c-29.35 0-48.47 17.51-54.33 41.05C94.48 448.2 92.27 439.1 92.27 439.1c-2.3-9.5-12-15.1-21.5-12.8s-15.1 12-12.8 21.5l14 58c1.6 6.7 7.7 11.3 14.5 11.3h337.5c8.8 0 16-7.2 16-16V96c0-8.8-7.2-16-16-16h-40zM152 48h240c26.5 0 48 21.5 48 48v352h-24V96h-16v304h-16V96h-16v304h-16V96h-16v304h-16V96h-16v304h-16V96h-16v304h-16V96h-16v304h-16V96h-24v316.5c-7.3-1.6-14.8-2.5-22.5-2.5-35.3 0-64 28.7-64 64 0 3.8.3 7.6.9 11.3-1.3-.2-2.7-.3-4-.3-26.5 0-48-21.5-48-48V96c0-26.5 21.5-48 48-48z"/>
+        </svg>
+        <span class="brand">Is It Sahih</span>
+      </a>
+    </header>
+
+    <h1>Privacy Policy</h1>
+    <p class="subtitle">Last updated: June 17, 2026</p>
+
+    <p>
+      This Privacy Policy describes what information IsItSahih ("we", "our", or "the service")
+      collects when you use <a href="https://isitsahih.app">isitsahih.app</a>, how it is used,
+      and what controls you have.
+    </p>
+
+    <h2>1. Information We Collect</h2>
+    <p>When you submit a claim for verification, we collect and log:</p>
+    <ul>
+      <li><strong>The claim text</strong> you submitted</li>
+      <li><strong>Verdict and result</strong> returned by the verification pipeline</li>
+      <li><strong>Session ID</strong> — a random identifier stored in your browser's localStorage.
+          It is generated locally and never linked to your name, email, or account.</li>
+      <li><strong>Device information</strong> derived from your User-Agent string: device type
+          (mobile/desktop/tablet), operating system, and browser name</li>
+      <li><strong>Approximate location</strong> derived from your IP address by Netlify's
+          infrastructure: country, city, and region. We do <strong>not</strong> log your raw
+          IP address or precise GPS coordinates.</li>
+      <li><strong>Browser language preference</strong> (Accept-Language header)</li>
+      <li><strong>Language selection</strong> (English or Bangla) you chose in the app</li>
+    </ul>
+    <p>
+      We do <strong>not</strong> collect your name, email address, account credentials,
+      payment information, or any form of persistent personal identifier beyond the
+      anonymous session ID described above.
+    </p>
+
+    <h2>2. Shared Results</h2>
+    <p>
+      Every verification automatically creates a permanent, publicly accessible link at
+      <code>https://isitsahih.app/share/{id}</code>. This link contains the claim text,
+      verdict, explanation, and Islamic source references. If you share this link with others,
+      they can read the result. Do not submit personal or sensitive information as a claim.
+    </p>
+    <p>
+      Shared results are stored indefinitely in Netlify Blobs and may be indexed by search
+      engines and AI crawlers.
+    </p>
+
+    <h2>3. How We Use This Information</h2>
+    <ul>
+      <li>To operate the verification service</li>
+      <li>To monitor service health, detect abuse, and improve the pipeline</li>
+      <li>To understand aggregate usage patterns (e.g., which languages are used, which
+          regions use the service)</li>
+      <li>To log API usage for internal quota management</li>
+    </ul>
+    <p>We do not sell your data to third parties. We do not use your data for advertising.</p>
+
+    <h2>4. Analytics</h2>
+    <p>
+      We use <strong>Google Analytics 4 (GA4)</strong> to measure aggregate page views and
+      user interactions. GA4 may set cookies and collect anonymised usage data. You can opt
+      out using the <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener">Google
+      Analytics Opt-out Browser Add-on</a>.
+    </p>
+
+    <h2>5. Third-Party Services</h2>
+    <ul>
+      <li><strong>Netlify</strong> — hosting, serverless functions, Blobs storage, and
+          geo-location derived from IP</li>
+      <li><strong>Kalimat.dev</strong> — semantic search API used to retrieve relevant
+          Quran and Hadith passages. Your claim text is sent to Kalimat's servers.</li>
+      <li><strong>Google Gemini API</strong> — AI model used to generate the verdict and
+          explanation. Your claim and the retrieved references are sent to Google's servers.</li>
+      <li><strong>Google Analytics</strong> — anonymised usage analytics</li>
+      <li><strong>Google Fonts</strong> — font delivery (Inter, Noto Naskh Arabic,
+          Noto Sans Bengali)</li>
+    </ul>
+
+    <h2>6. Cookies and Local Storage</h2>
+    <p>
+      We store two items in your browser's <code>localStorage</code>:
+    </p>
+    <ul>
+      <li><strong>Session ID</strong> (<code>iss_session</code>) — a random UUID generated
+          in your browser. Used to group your requests in our logs. Does not identify you
+          personally.</li>
+      <li><strong>Language preference</strong> (<code>iss_language</code>) — stores your
+          selected language (English or Bangla) so it persists across visits.</li>
+    </ul>
+    <p>
+      Google Analytics may set its own cookies (<code>_ga</code>, <code>_ga_*</code>).
+      These are subject to Google's privacy policy.
+    </p>
+
+    <h2>7. Data Retention</h2>
+    <p>
+      Verification logs (claim text, verdict, device info, approximate location) are stored
+      in Google Sheets and retained until manually deleted. Shared result blobs are stored
+      indefinitely unless we receive a removal request.
+    </p>
+
+    <h2>8. Your Rights</h2>
+    <p>
+      If you would like to request deletion of a shared result or any logged data associated
+      with your session, please contact us at
+      <a href="mailto:isitsahih@gmail.com">isitsahih@gmail.com</a> with the share URL or
+      your session ID (visible in your browser's localStorage under <code>iss_session</code>).
+    </p>
+
+    <h2>9. Children</h2>
+    <p>
+      This service is not directed at children under 13. We do not knowingly collect
+      information from children.
+    </p>
+
+    <h2>10. Changes to This Policy</h2>
+    <p>
+      We may update this policy from time to time. The "Last updated" date at the top of
+      this page will reflect the most recent revision. Continued use of the service after
+      a change constitutes acceptance of the updated policy.
+    </p>
+
+    <h2>11. Contact</h2>
+    <p>
+      <a href="mailto:isitsahih@gmail.com">isitsahih@gmail.com</a>
+    </p>
+
+    <footer>
+      <p>
+        <a href="/">IsItSahih</a> &nbsp;·&nbsp;
+        <a href="/about.html">About & Methodology</a> &nbsp;·&nbsp;
+        © 2026 Is It Sahih. All rights reserved.
+      </p>
+    </footer>
+  </div>
+</body>
+</html>

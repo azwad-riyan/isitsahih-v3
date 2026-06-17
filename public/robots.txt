@@ -1,8 +1,20 @@
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://isitsahih.app/sitemap.xml
+# AI search crawlers — explicitly welcome
+User-agent: GPTBot
+Allow: /
 
-# Crawl-delay
-Crawl-delay: 1
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
+Sitemap: https://isitsahih.app/sitemap.xml

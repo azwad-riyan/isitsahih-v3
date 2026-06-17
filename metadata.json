@@ -1,5 +1,5 @@
 {
-  "name": "hadith checker",
-  "description": "A simple hadith refereance checking app by AI.",
+  "name": "IsItSahih",
+  "description": "Verify Islamic claims against the Quran and authentic Sahih Hadith. See the actual sources and decide for yourself.",
   "requestFramePermissions": []
 }

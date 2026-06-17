@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  <url>
-    <loc>https://isitsahih.app/</loc>
-    <lastmod>2024-12-17</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://isitsahih.app/" />
-    <xhtml:link rel="alternate" hreflang="bn" href="https://isitsahih.app/" />
-  </url>
-</urlset>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://isitsahih.app/.netlify/functions/sitemap?part=pages</loc>
+    <lastmod>2026-06-17</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://isitsahih.app/.netlify/functions/sitemap?part=shares</loc>
+    <lastmod>2026-06-17</lastmod>
+  </sitemap>
+</sitemapindex>

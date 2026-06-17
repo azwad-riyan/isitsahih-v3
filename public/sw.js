@@ -35,6 +35,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // leave cross-origin alone
   if (url.pathname.startsWith("/.netlify/")) return; // never cache functions/API
+  if (url.pathname.startsWith("/share/")) return; // let edge function handle OG injection
 
   // Navigations (including /share/* deep links): network-first, fall back to the
   // cached shell when offline so the installed app still opens.
