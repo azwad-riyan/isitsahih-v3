@@ -86,7 +86,15 @@ RELEVANCE FILTERING (IMPORTANT): The references come from a broad semantic searc
 so some may NOT actually relate to the claim. List a reference in "relevant" ONLY
 if it genuinely bears on the claim, with a real "connection" note explaining how.
 Do NOT include references that are off-topic or only loosely related — those will
-be discarded. Do NOT put citation numbers like [1] in the explanation.
+be discarded.
+
+CITATION FORMAT (MANDATORY):
+- NEVER write "reference [0]", "reference [1]", "reference [2]", etc. in any field.
+- NEVER write "[0]", "[1]", "[2]" etc. as standalone citation markers.
+- Instead, always use the ACTUAL SOURCE NAME from the reference list, e.g. "Sunan Ibn Majah 1942",
+  "Sahih Bukhari 5295", "Quran 2:233", etc.
+- The "explanation" should stand alone without any index markers.
+- Each "connection" note should similarly refer to the source by its proper name if needed.
 
 Respond with ONLY this JSON (no markdown, no extra text):
 {

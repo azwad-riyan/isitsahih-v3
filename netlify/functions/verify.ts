@@ -208,9 +208,23 @@ function assembleResult(
   // Attach AI connection notes to references by index. The AI never edits a
   // reference's Arabic/translation — it only annotates which ones are relevant.
   const connectionByIndex = new Map<number, string>();
+
+  // Safety net: replace any "reference [N]" or "[N]" patterns the AI emitted
+  // with the actual source name so users see e.g. "Sunan Ibn Majah 1942" instead.
+  const sanitiseConnection = (text: string): string => {
+    return text.replace(/\breference\s*\[(\d+)\]/gi, (_, n) => {
+      const idx = parseInt(n, 10);
+      return refs[idx]?.source ?? `reference [${n}]`;
+    }).replace(/\[([0-9]+)\]/g, (match, n) => {
+      const idx = parseInt(n, 10);
+      // Only replace if it looks like a citation (i.e. the index exists in refs)
+      return idx >= 0 && idx < refs.length ? (refs[idx]?.source ?? match) : match;
+    });
+  };
+
   for (const r of ai.relevant) {
     if (r.index >= 0 && r.index < refs.length && r.connection.trim()) {
-      connectionByIndex.set(r.index, r.connection.trim());
+      connectionByIndex.set(r.index, sanitiseConnection(r.connection.trim()));
     }
   }
 
